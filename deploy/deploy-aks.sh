@@ -29,7 +29,7 @@ SUBNET_POD_NAME="subnet-podpool"
 SUBNET_POD_ADDRESS_PREFIXES="10.241.0.0/16"
 
 # az aks get-versions --location ${LOCATION} --output table
-KUBERNETES_VERSION="1.27.1"
+KUBERNETES_VERSION="1.27.7"
 CNI_PLUGIN="azure"
 NETWORK_POLICY="azure"
 NODE_VM_SIZE="Standard_B4ms"
