@@ -5,7 +5,6 @@ az config set extension.use_dynamic_install=yes_without_prompt
 az extension add --name aks-preview
 az extension update --name aks-preview
 az provider register --namespace Microsoft.ContainerService
-az provider register --namespace Microsoft.Insights
 
 #
 # Variables for Azure Kubernetes Service (AKS)
@@ -15,7 +14,7 @@ az provider register --namespace Microsoft.Insights
 # SUBSCRIPTION_ID="xxx-xxx-xxx-xxx"
 SUBSCRIPTION_ID=$(az account show | jq -r .id)
 
-AKS_CLUSTER_NAME="poc-thin-aks"
+AKS_CLUSTER_NAME="poc-thin2-aks"
 AKS_NODE_COUNT=2
 RESOURCE_GROUP_NAME="rg-${AKS_CLUSTER_NAME}"
 LOCATION="EastUS"
@@ -37,7 +36,9 @@ NODE_VM_SIZE="Standard_B4ms"
 #
 SUBNET_AGIC_NAME="subnet-agic"
 SUBNET_AGIC_ADDRESS_PREFIXES="10.55.66.0/24"
+AGIC_PRIVATE_IP="10.55.66.10"
 AGIC_NAME="agic-${AKS_CLUSTER_NAME}"
+AGIC_PUBLIC_IP_NAME="pip-${AGIC_NAME}"
 
 #
 # Step 1: Create a resource group
@@ -55,16 +56,42 @@ az network vnet subnet create -g ${RESOURCE_GROUP_NAME} --vnet-name ${VNET_NAME}
 az network vnet subnet create -g ${RESOURCE_GROUP_NAME} --vnet-name ${VNET_NAME} --name ${SUBNET_AGIC_NAME} --address-prefixes ${SUBNET_AGIC_ADDRESS_PREFIXES} -o none
 
 #
+# Step 3: Create Public IP
+#
+
+time az network public-ip create -g ${RESOURCE_GROUP_NAME} --name ${AGIC_PUBLIC_IP_NAME} \
+  --sku Standard \
+  --location ${LOCATION} \
+  --zone 1 2 3
+
+#
+# Step 4: Create AGIC with 2 frontend ip: private IP and public ip
+#
+
+time az network application-gateway create -g ${RESOURCE_GROUP_NAME} --location ${LOCATION} -n ${AGIC_NAME} \
+  --sku Standard_v2 \
+  --capacity 1 \
+  --public-ip-address ${AGIC_PUBLIC_IP_NAME} \
+  --private-ip-address ${AGIC_PRIVATE_IP} \
+  --vnet-name ${VNET_NAME} \
+  --subnet ${SUBNET_AGIC_NAME} \
+  --priority 100 \
+  --http2 enabled \
+  --zones {1,2,3} \
+  --capacity 1
+
+
+#
 # Step 5: Azure Kubernetes Service (AKS)
 # Creation: 5 ~ 10m
 # https://docs.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-create
 #
 
+APPGW_ID=$(az network application-gateway show -n ${AGIC_NAME} -g ${RESOURCE_GROUP_NAME} --query "id" -o tsv)
+
 time az aks create -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} -l ${LOCATION} \
   --kubernetes-version ${KUBERNETES_VERSION} \
   --enable-cluster-autoscaler \
-  --azure-monitor-workspace-resource-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/microsoft.monitor/accounts/${AZURE_MONITOR_WORKSPACE_NAME} \
-  --grafana-resource-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/microsoft.dashboard/grafana/${GRAFANA_NAME} \
   --max-count 2 \
   --min-count 1 \
   --tier standard \
@@ -79,8 +106,7 @@ time az aks create -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} -l ${LOCATIO
   --vnet-subnet-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/${SUBNET_NODE_NAME} \
   --pod-subnet-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/${SUBNET_POD_NAME} \
   --enable-addons ingress-appgw \
-  --appgw-name ${AGIC_NAME} \
-  --appgw-subnet-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/${SUBNET_AGIC_NAME}
+  --appgw-id ${APPGW_ID}
 
 
 AKS_RESOURCE_GROUPNAME=$(az aks show -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} --query "nodeResourceGroup" -o tsv)
@@ -91,33 +117,12 @@ if [ -z "$AKS_RESOURCE_GROUPNAME" ]; then
 fi
 
 #
-# Step 6:  Update existing Application Gateway
-#
-# https://learn.microsoft.com/en-us/cli/azure/network/application-gateway?view=azure-cli-latest#az-network-application-gateway-update
-#
-
-time az network application-gateway update -n ${AGIC_NAME} -g ${AKS_RESOURCE_GROUPNAME} \
-  --sku Standard_v2 \
-  --capacity 1 \
-
-#
-# Step 8: Get AKS Credentials
+# Step 6: Get AKS Credentials
 #
 
 az aks get-credentials --admin --overwrite-existing --resource-group ${RESOURCE_GROUP_NAME} \
   --name ${AKS_CLUSTER_NAME} \
   --file ./kubeconfig_${AKS_CLUSTER_NAME}
-
-
-#
-# Step 10: Show Information
-#
-
-APPGW_PIP=$(az network public-ip show --name ${AGIC_NAME}-appgwpip --resource-group ${AKS_RESOURCE_GROUPNAME} --query "ipAddress" -o tsv)
-
-echo
-echo "Azure Application Gateway IP: ${APPGW_PIP}"
-echo
 
 
 #
