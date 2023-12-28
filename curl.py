@@ -16,6 +16,7 @@ READTIMEOUT_COUNT = 0
 CONNECTTIMEOUT_COUNT = 0
 HTTPERROR_COUNT = 0
 UNKNOWNERROR_COUNT = 0
+output = 0
 
 if len(sys.argv) == 3:
     HEADER_HOST = sys.argv[2]
@@ -33,6 +34,7 @@ def main():
     global CONNECTTIMEOUT_COUNT
     global HTTPERROR_COUNT
     global UNKNOWNERROR_COUNT
+    global output
 
     while True:
 
