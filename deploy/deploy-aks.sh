@@ -17,29 +17,33 @@ az feature register --namespace "Microsoft.ContainerService" --name "AzureServic
 # SUBSCRIPTION_ID="xxx-xxx-xxx-xxx"
 SUBSCRIPTION_ID=$(az account show | jq -r .id)
 
-AKS_CLUSTER_NAME="poc-aks"
+AKS_CLUSTER_NAME="aks-demo-eastus2"
 AKS_NODE_COUNT=2
 RESOURCE_GROUP_NAME="rg-${AKS_CLUSTER_NAME}"
-LOCATION="EastUS"
+LOCATION="EastUS2"
 VNET_NAME="vnet-${AKS_CLUSTER_NAME}"
-VNET_ADDRESS_PREFIXES="10.0.0.0/8"
+VNET_ADDRESS_PREFIXES="10.67.0.0/24"
 SUBNET_NODE_NAME="subnet-nodepool"
-SUBNET_NODE_ADDRESS_PREFIXES="10.240.0.0/16"
+SUBNET_NODE_ADDRESS_PREFIXES="10.67.0.0/126"
 SUBNET_POD_NAME="subnet-podpool"
-SUBNET_POD_ADDRESS_PREFIXES="10.241.0.0/16"
+SUBNET_POD_ADDRESS_PREFIXES="10.67.0.0/25"
 
 # az aks get-versions --location ${LOCATION} --output table
 KUBERNETES_VERSION="1.27.7"
 CNI_PLUGIN="azure"
 NETWORK_POLICY="azure"
+NETWORK_DATAPLANE="azure"
+#NETWORK_PLUGIN_MODE=""
 NODE_VM_SIZE="Standard_B4ms"
 
 #
 # Variables for Application Gateway Ingress Controller (AGIC)
 #
 SUBNET_AGIC_NAME="subnet-agic"
-SUBNET_AGIC_ADDRESS_PREFIXES="10.55.66.0/24"
+SUBNET_AGIC_ADDRESS_PREFIXES="10.67.0.64/26"
+AGIC_PRIVATE_IP="10.67.0.68"
 AGIC_NAME="agic-${AKS_CLUSTER_NAME}"
+AGIC_PUBLIC_IP_NAME="pip-${AGIC_NAME}"
 
 #
 # Variable for Log Analytics Workspace
@@ -98,9 +102,10 @@ time az aks create -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} -l ${LOCATIO
   --grafana-resource-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/microsoft.dashboard/grafana/${GRAFANA_NAME} \
   --max-count 2 \
   --min-count 1 \
-  --tier standard \
+  --tier premium \
   --max-pods 250 \
   --auto-upgrade-channel stable \
+  --k8s-support-plan "AKSLongTermSupport" \
   --dns-name-prefix ${AKS_CLUSTER_NAME} \
   --enable-managed-identity \
   --node-count ${AKS_NODE_COUNT} \
