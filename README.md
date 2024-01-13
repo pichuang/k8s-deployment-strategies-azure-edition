@@ -77,7 +77,7 @@ These examples were created and tested on
 
 |                       Azure Service                      | Azure Support Status |        Version       | Dependencies         |
 |----------------------------------------------------------|:--------------------:|----------------------|----------------------|
-| [Azure Kubernetes Service][9]                            | GA                   | v1.27.1              | N/A |
+| [Azure Kubernetes Service][9]                            | GA                   | v1.27.7              | N/A |
 | [Azure Monitor managed service for Prometheus][1]        | GA                   |                      | N/A |
 | [Azure Managed Grafana][4]                               | GA                   | [v9.5.6 (859a2654d3)][12] | Azure Monitor managed service |
 | [Azure Application Gateway Ingress Controller (AGIC)][3] | GA                   | Standard_v2          | Azure Application Gateway |
