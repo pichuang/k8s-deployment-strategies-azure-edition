@@ -101,7 +101,7 @@ time az aks create -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} -l ${LOCATIO
   --min-count 1 \
   --tier premium \
   --max-pods 250 \
-  --auto-upgrade-channel stable \
+  --auto-upgrade-channel patch \
   --k8s-support-plan "AKSLongTermSupport" \
   --dns-name-prefix ${AKS_CLUSTER_NAME} \
   --enable-managed-identity \
