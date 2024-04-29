@@ -32,24 +32,24 @@ spec:
           containerPort: 8080
         env:
         - name: HOSTNAME
-          value: "ip.divecode.in"
----
-# via LoadBalancer
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: ns-ipconfig
-  name: svc-lb-ipconfig-io
-  labels:
-    app: ipconfig-io
-spec:
-  type: LoadBalancer
-  ports:
-  - name: http
-    port: 80
-    targetPort: http
-  selector:
-    app: ipconfig-io
+          value: "appgw.divecode.in"
+# ---
+# # via LoadBalancer
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   namespace: ns-ipconfig
+#   name: svc-lb-ipconfig-io
+#   labels:
+#     app: ipconfig-io
+# spec:
+#   type: LoadBalancer
+#   ports:
+#   - name: http
+#     port: 80
+#     targetPort: http
+#   selector:
+#     app: ipconfig-io
 ---
 apiVersion: v1
 kind: Service
@@ -90,28 +90,28 @@ spec:
             name: svc-ipconfig-io
             port:
               number: 80
----
-# via private AGIC
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  namespace: ns-ipconfig
-  name: ingress-private-ipconfig-io
-  labels:
-    app: ipconfig-io
-  annotations:
-    kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/connection-draining: "true"
-    appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
-    appgw.ingress.kubernetes.io/use-private-ip: "true"
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /
-        pathType: Exact
-        backend:
-          service:
-            name: svc-ipconfig-io
-            port:
-              number: 80
+# ---
+# # via private AGIC
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   namespace: ns-ipconfig
+#   name: ingress-private-ipconfig-io
+#   labels:
+#     app: ipconfig-io
+#   annotations:
+#     kubernetes.io/ingress.class: azure/application-gateway
+#     appgw.ingress.kubernetes.io/connection-draining: "true"
+#     appgw.ingress.kubernetes.io/connection-draining-timeout: "30"
+#     appgw.ingress.kubernetes.io/use-private-ip: "true"
+# spec:
+#   rules:
+#   - http:
+#       paths:
+#       - path: /
+#         pathType: Exact
+#         backend:
+#           service:
+#             name: svc-ipconfig-io
+#             port:
+#               number: 80

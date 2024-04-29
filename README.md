@@ -81,8 +81,8 @@ These examples were created and tested on
 | [Azure Monitor managed service for Prometheus][1]        | GA                   |                      | N/A |
 | [Azure Managed Grafana][4]                               | GA                   | [v9.5.6 (859a2654d3)][12] | Azure Monitor managed service |
 | [Azure Application Gateway Ingress Controller (AGIC)][3] | GA                   | Standard_v2          | Azure Application Gateway |
-| [Azure Service Mesh add-on (a.k.a Azure Managed Istio Service Mesh)][2]| Preview | v1.17 | Azure Load Balancer |
-| [Web Application Routing add-on (a.k.a Azure Managed ingress-nginx)][10] | Preview | [v1.2.1][11] | Azure Application Gateway |
+| [Azure Service Mesh add-on (a.k.a Azure Managed Istio Service Mesh)][2]| GA | v1.20 | Azure Load Balancer |
+| [Web Application Routing add-on (a.k.a Azure Managed ingress-nginx)][10] | GA | [v1.2.1][11] | Azure Application Gateway |
 | Network Observability add-on | Preview | | Azure Monitor managed service for Prometheus / Azure Container Insight |
 
 ```bash
