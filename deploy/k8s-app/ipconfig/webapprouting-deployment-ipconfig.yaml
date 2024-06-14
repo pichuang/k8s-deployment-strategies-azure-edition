@@ -32,7 +32,7 @@ spec:
           containerPort: 8080
         env:
         - name: HOSTNAME
-          value: "nginx.divecode.in"
+          value: "ipconfig.divecode.in"
 ---
 apiVersion: v1
 kind: Service
@@ -58,7 +58,7 @@ metadata:
 spec:
   ingressClassName: webapprouting.kubernetes.azure.com
   rules:
-  - host: nginx.divecode.in
+  - host: ipconfig.divecode.in
     http:
       paths:
       - backend:

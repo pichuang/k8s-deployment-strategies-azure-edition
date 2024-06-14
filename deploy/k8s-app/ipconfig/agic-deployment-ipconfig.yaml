@@ -32,7 +32,7 @@ spec:
           containerPort: 8080
         env:
         - name: HOSTNAME
-          value: "appgw.divecode.in"
+          value: "ipconfig.divecode.in"
 # ---
 # # via LoadBalancer
 # apiVersion: v1
