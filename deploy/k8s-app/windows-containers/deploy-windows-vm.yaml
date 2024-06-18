@@ -3,8 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: windows-pvc
 spec:
-  # storageClassName: managed-premium-retain
-  storageClassName: managed-premium
+  storageClassName: managed-premium-retain
+  # storageClassName: managed-premium
   accessModes:
     - ReadWriteOnce
   resources:
@@ -73,32 +73,15 @@ spec:
   selector:
     name: windows
   ports:
-    - name: tcp-8006
-      protocol: TCP
-      port: 8006
-      targetPort: 8006
-    - name: tcp-3389
+    # - name: tcp-no-vnc-8006
+    #   protocol: TCP
+    #   port: 8006
+    #   targetPort: 8006
+    - name: tcp-rdp-3389
       protocol: TCP
       port: 3389
       targetPort: 3389
-    - name: udp-3389
+    - name: udp-rdp-3389
       protocol: UDP
       port: 3389
       targetPort: 3389
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: windows-policy
-spec:
-  podSelector:
-    matchLabels:
-      name: windows
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector: {}
-    - from:
-        - ipBlock:
-            cidr: 122.116.34.187/32
