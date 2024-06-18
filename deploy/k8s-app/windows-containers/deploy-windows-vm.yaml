@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: windows-pvc
+spec:
+  # storageClassName: managed-premium-retain
+  storageClassName: managed-premium
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 64Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: windows
+  labels:
+    name: windows
+spec:
+  terminationGracePeriodSeconds: 120 # the Kubernetes default is 30 seconds and it may be not enough
+  containers:
+    - name: windows
+      image: dockurr/windows
+      ports:
+        - containerPort: 8006
+          protocol: TCP
+        - containerPort: 3389
+          protocol: TCP
+        - containerPort: 3389
+          protocol: UDP
+      securityContext:
+        privileged: true
+      env:
+        # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-select-the-windows-version
+        - name: VERSION
+          value: "winxp"
+        - name: RAM_SIZE
+          value: 4G
+        - name: CPU_CORES
+          value: "2"
+        - name: DISK_SIZE
+          value: "64G"
+        - name: LANGUAGE
+          value: "English"
+        - name: REGION
+          value: "en-US"
+        - name: KEYBOARD
+          value: "en-US"
+        - name: USERNAME
+          value: "pichuang"
+        - name: PASSWORD
+          value: "humdgskxer2y487p3c6q5v"
+      volumeMounts:
+        - mountPath: /storage
+          name: storage
+        - mountPath: /dev/kvm
+          name: dev-kvm
+  volumes:
+    - name: storage
+      persistentVolumeClaim:
+        claimName: windows-pvc
+    - name: dev-kvm
+      hostPath:
+        path: /dev/kvm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: windows
+spec:
+  type: LoadBalancer
+  selector:
+    name: windows
+  ports:
+    - name: tcp-8006
+      protocol: TCP
+      port: 8006
+      targetPort: 8006
+    - name: tcp-3389
+      protocol: TCP
+      port: 3389
+      targetPort: 3389
+    - name: udp-3389
+      protocol: UDP
+      port: 3389
+      targetPort: 3389
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: windows-policy
+spec:
+  podSelector:
+    matchLabels:
+      name: windows
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
+    - from:
+        - ipBlock:
+            cidr: 122.116.34.187/32

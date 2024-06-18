@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnet
+  labels:
+    app: aspnet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aspnet
+  template:
+    metadata:
+      labels:
+        app: aspnet
+    spec:
+      nodeSelector:
+        kubernetes.io/os: windows
+      containers:
+      - name: aspnet-server
+        image: ghcr.io/pichuang/sample-aspnet-container:v1
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnet
+spec:
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+  selector:
+    app: aspnet
