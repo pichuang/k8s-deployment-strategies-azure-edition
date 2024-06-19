@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: windows-pvc
+  name: macos-pvc
 spec:
   storageClassName: managed-premium-retain
   # storageClassName: managed-premium
@@ -14,29 +14,29 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: windows
+  name: macos
   labels:
-    name: windows
+    name: macos
 spec:
   terminationGracePeriodSeconds: 120 # the Kubernetes default is 30 seconds and it may be not enough
   containers:
-    - name: windows
-      image: dockurr/windows
+    - name: macos
+      image: dockurr/macos
       ports:
         - containerPort: 8006
           protocol: TCP
-        - containerPort: 3389
+        - containerPort: 5900
           protocol: TCP
-        - containerPort: 3389
+        - containerPort: 5900
           protocol: UDP
         - containerPort: 22
           protocol: TCP
       securityContext:
         privileged: true
       env:
-        # https://github.com/dockur/windows?tab=readme-ov-file#how-do-i-select-the-windows-version
+        # https://github.com/dockur/macos?tab=readme-ov-file#how-do-i-select-the-macos-version
         - name: VERSION
-          value: "winxp"
+          value: "sonoma"
         - name: RAM_SIZE
           value: 4G
         - name: CPU_CORES
@@ -61,7 +61,7 @@ spec:
   volumes:
     - name: storage
       persistentVolumeClaim:
-        claimName: windows-pvc
+        claimName: macos-pvc
     - name: dev-kvm
       hostPath:
         path: /dev/kvm
@@ -69,21 +69,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: windows
+  name: macos
 spec:
   type: LoadBalancer
   selector:
-    name: windows
+    name: macos
+  # loadBalancerSourceRanges:
+  # - x.x.x.x/32
   ports:
-    # - name: tcp-no-vnc-8006
-    #   protocol: TCP
-    #   port: 8006
-    #   targetPort: 8006
-    - name: tcp-rdp-3389
+    - name: tcp-no-vnc-8006
       protocol: TCP
-      port: 3389
-      targetPort: 3389
-    - name: udp-rdp-3389
+      port: 8006
+      targetPort: 8006
+    - name: tcp-ssh-22
+      protocol: TCP
+      port: 22
+      targetPort: 22
+    - name: tcp-5900
+      protocol: TCP
+      port: 5900
+      targetPort: 5900
+    - name: udp-rdp-5900
       protocol: UDP
-      port: 3389
-      targetPort: 3389
+      port: 5900
+      targetPort: 5900

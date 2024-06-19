@@ -19,6 +19,7 @@ spec:
       containers:
       - name: aspnet-server
         image: ghcr.io/pichuang/sample-aspnet-container:v1
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 80
 ---
