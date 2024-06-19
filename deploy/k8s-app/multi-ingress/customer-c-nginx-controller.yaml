@@ -8,7 +8,7 @@ apiVersion: approuting.kubernetes.azure.com/v1alpha1
 kind: NginxIngressController
 metadata:
   name: ingressname-customer-c
-  namespace: ns-customer-c
+  # namespace: ns-customer-c
 spec:
   ingressClassName: ingressclassname-customer-c
   controllerNamePrefix: prefix-c
