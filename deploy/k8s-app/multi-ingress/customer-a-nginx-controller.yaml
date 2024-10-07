@@ -12,6 +12,13 @@ metadata:
 spec:
   ingressClassName: ingressclassname-customer-a
   controllerNamePrefix: prefix-a
+  # https://learn.microsoft.com/zh-tw/azure/aks/load-balancer-standard#customizations-via-kubernetes-annotations
+  loadBalancerAnnotations:
+    service.beta.kubernetes.io/azure-pip-name: "pip-customer-a"
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: "rg-aks-tenancy"
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    service.beta.kubernetes.io/azure-shared-securityrule: "true"
+    service.beta.kubernetes.io/azure-load-balancer-tcp-idle-timeout: "4"
 ---
 apiVersion: apps/v1
 kind: Deployment
