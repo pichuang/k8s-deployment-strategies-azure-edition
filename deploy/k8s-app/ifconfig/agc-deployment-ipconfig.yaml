@@ -2,62 +2,43 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ns-ipconfig
+  name: ns-ifconfig
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: ns-ipconfig
-  name: deployment-ipconfig-io-v1
+  namespace: ns-ifconfig
+  name: deployment-ifconfig-io
   labels:
-    app: ipconfig-io
+    app: ifconfig-io
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ipconfig-io
-      version: v1.0.0
+      app: ifconfig-io
   template:
     metadata:
       labels:
-        app: ipconfig-io
-        version: v1.0.0
+        app: ifconfig-io
     spec:
       terminationGracePeriodSeconds: 100
       containers:
-      - name: ipconfig-io
+      - name: ifconfig-io
         image: docker.io/georgyo/ifconfig.io:latest
         ports:
         - name: http
           containerPort: 8080
         env:
         - name: HOSTNAME
-          value: "ipconfig.divecode.in"
-# ---
-# # via LoadBalancer
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   namespace: ns-ipconfig
-#   name: svc-lb-ipconfig-io
-#   labels:
-#     app: ipconfig-io
-# spec:
-#   type: LoadBalancer
-#   ports:
-#   - name: http
-#     port: 80
-#     targetPort: http
-#   selector:
-#     app: ipconfig-io
+          value: "ifconfig.divecode.in"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: ns-ipconfig
-  name: svc-ipconfig-io
+  namespace: ns-ifconfig
+  name: svc-ifconfig-io
   labels:
-    app: ipconfig-io
+    app: ifconfig-io
 spec:
   type: ClusterIP
   ports:
@@ -65,16 +46,18 @@ spec:
     port: 80
     targetPort: http
   selector:
-    app: ipconfig-io
+    app: ifconfig-io
 ---
+
+
 # via public AGIC
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  namespace: ns-ipconfig
-  name: ingress-public-ipconfig-io
+  namespace: ns-ifconfig
+  name: ingress-public-ifconfig-io
   labels:
-    app: ipconfig-io
+    app: ifconfig-io
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
     appgw.ingress.kubernetes.io/connection-draining: "true"
@@ -87,7 +70,7 @@ spec:
         pathType: Exact
         backend:
           service:
-            name: svc-ipconfig-io
+            name: svc-ifconfig-io
             port:
               number: 80
 # ---
@@ -95,10 +78,10 @@ spec:
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
-#   namespace: ns-ipconfig
-#   name: ingress-private-ipconfig-io
+#   namespace: ns-ifconfig
+#   name: ingress-private-ifconfig-io
 #   labels:
-#     app: ipconfig-io
+#     app: ifconfig-io
 #   annotations:
 #     kubernetes.io/ingress.class: azure/application-gateway
 #     appgw.ingress.kubernetes.io/connection-draining: "true"
@@ -112,6 +95,6 @@ spec:
 #         pathType: Exact
 #         backend:
 #           service:
-#             name: svc-ipconfig-io
+#             name: svc-ifconfig-io
 #             port:
 #               number: 80

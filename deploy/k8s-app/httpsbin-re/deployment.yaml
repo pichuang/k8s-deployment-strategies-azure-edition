@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-re
+  namespace: ns-test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: httpbin-re
+  template:
+    metadata:
+      labels:
+        app: httpbin-re
+    spec:
+      containers:
+      - image: ghcr.io/pichuang/httpbin-re:master
+        imagePullPolicy: IfNotPresent
+        name: httpbin-re
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-httpbin-re
+  namespace: ns-test
+  labels:
+    app: httpbin-re
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 80
+  selector:
+    app: httpbin-re
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-httpbin-re
+  namespace: ns-test
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: svc-httpbin-re
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
