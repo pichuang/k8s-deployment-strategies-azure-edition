@@ -13,14 +13,13 @@ az feature register --namespace "Microsoft.ContainerService" --name "AzureServic
 # Variables for Azure Kubernetes Service (AKS)
 #
 
-
 # SUBSCRIPTION_ID="xxx-xxx-xxx-xxx"
 SUBSCRIPTION_ID=$(az account show | jq -r .id)
 
 AKS_CLUSTER_NAME="aks-demo-eastus2"
 AKS_NODE_COUNT=2
 RESOURCE_GROUP_NAME="rg-${AKS_CLUSTER_NAME}"
-LOCATION="EastUS2"
+LOCATION="taiwannorth"
 VNET_NAME="vnet-${AKS_CLUSTER_NAME}"
 VNET_ADDRESS_PREFIXES="10.67.0.0/24"
 SUBNET_NODE_NAME="subnet-nodepool"
@@ -29,7 +28,7 @@ SUBNET_POD_NAME="subnet-podpool"
 SUBNET_POD_ADDRESS_PREFIXES="10.67.0.0/25"
 
 # az aks get-versions --location ${LOCATION} --output table
-KUBERNETES_VERSION="1.27.7"
+KUBERNETES_VERSION="1.30.6"
 CNI_PLUGIN="azure"
 NETWORK_POLICY="azure"
 NETWORK_DATAPLANE="azure"
@@ -77,17 +76,17 @@ az network vnet subnet create -g ${RESOURCE_GROUP_NAME} --vnet-name ${VNET_NAME}
 # Creation: ~ 22s
 
 time az resource create -g ${RESOURCE_GROUP_NAME} -l ${LOCATION} \
-     --namespace microsoft.monitor \
-     --resource-type accounts \
-     --name ${AZURE_MONITOR_WORKSPACE_NAME} \
-     --properties {}
+  --namespace microsoft.monitor \
+  --resource-type accounts \
+  --name ${AZURE_MONITOR_WORKSPACE_NAME} \
+  --properties {}
 
 #
 # Step 4: Link to Grafana Instance
 #
 
 time az grafana create -g ${RESOURCE_GROUP_NAME} -l ${LOCATION} \
-    --name ${GRAFANA_NAME}
+  --name ${GRAFANA_NAME}
 
 #
 # Step 5: Azure Kubernetes Service (AKS)
@@ -120,7 +119,6 @@ time az aks create -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} -l ${LOCATIO
   --appgw-name ${AGIC_NAME} \
   --appgw-subnet-id /subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Network/virtualNetworks/${VNET_NAME}/subnets/${SUBNET_AGIC_NAME}
 
-
 AKS_RESOURCE_GROUPNAME=$(az aks show -n ${AKS_CLUSTER_NAME} -g ${RESOURCE_GROUP_NAME} --query "nodeResourceGroup" -o tsv)
 
 if [ -z "$AKS_RESOURCE_GROUPNAME" ]; then
@@ -136,7 +134,7 @@ fi
 
 time az network application-gateway update -n ${AGIC_NAME} -g ${AKS_RESOURCE_GROUPNAME} \
   --sku Standard_v2 \
-  --capacity 1 \
+  --capacity 1
 
 #
 # Step 7: Enable Ingress Gateway for Istio Service Mesh
@@ -145,7 +143,6 @@ time az network application-gateway update -n ${AGIC_NAME} -g ${AKS_RESOURCE_GRO
 time az aks mesh enable-ingress-gateway --resource-group ${RESOURCE_GROUP_NAME} \
   --name ${AKS_CLUSTER_NAME} \
   --ingress-gateway-type external
-
 
 #
 # Step 8: Get AKS Credentials
@@ -170,7 +167,6 @@ az aks command invoke \
   --name ${AKS_CLUSTER_NAME} \
   --command "kubectl apply -f ama-metrics-settings-configmap.yml" \
   --file ama-metrics-settings-configmap.yml
-
 
 #
 # Import Grafana Dashboard
@@ -227,12 +223,10 @@ echo
 #     --retention-time 14 \
 #     --query-access Enabled
 
-
 #
 # Step 999: Wipe Resource Group
 #
 # az group delete --name ${RESOURCE_GROUP_NAME} --yes --no-wait
-
 
 # Import kubeconfig to Bastion
 # [cloudshell]$ az aks get-credentials --resource-group rg-poc-aks --name poc-aks --file ./kubeconfig_poc-aks
@@ -245,3 +239,4 @@ echo
 # CoreDNS is running at https://poc-aks-4iuoo1vw.hcp.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 # Metrics-server is running at https://poc-aks-4iuoo1vw.hcp.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/https:metrics-server:/proxy
 #
+
